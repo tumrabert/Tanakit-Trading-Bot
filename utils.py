@@ -7,12 +7,28 @@ from markets import MARKETS
 load_dotenv()
 
 
-def price_to_int(price_float):
+PRICE_PRECISIONS = {
+    "BTC": 1,
+    "ETH": 2,
+    "SOL": 2,
+    "BNB": 1,
+}
+
+SIZE_MULTIPLIERS = {
+    "BTC": 1e5,
+    "ETH": 1e4,
+    "SOL": 1e3, # Guessing for SOL, need verification
+    "BNB": 1e3,
+}
+
+def get_size_multiplier(token):
+    return SIZE_MULTIPLIERS.get(token, 1e5) # Default to 1e5
+
+def price_to_int(price_float, token="BTC"):
     """Convert price to int format (remove decimals)"""
-    # Assuming standard behavior: 3000.50 -> 30005
-    # Note: This logic might need adjustment based on specific token precision/decimals
-    # Using the logic from start_grid.py
-    price_str = f"{price_float:.1f}"
+    precision = PRICE_PRECISIONS.get(token, 1)
+    format_str = f"{{:.{precision}f}}"
+    price_str = format_str.format(price_float)
     price_int = int(price_str.replace(".", ""))
     return price_int
 

@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from lighter.signer_client import CreateOrderTxReq
 import time
 from markets import MARKETS
-from utils import price_to_int, get_client, get_market_price
+from utils import price_to_int, get_client, get_market_price, get_size_multiplier
 
 # Load environment variables from project/.env
 load_dotenv()
@@ -62,15 +62,11 @@ async def open_limit_order(token, leverage, side, amount_in_usd, price, take_pro
         position_size_usd = amount_in_usd * leverage
         coin_amount = position_size_usd / price
         
-        # Based on user feedback/screenshot: 105263 units -> 1.05263 BTC
-        # This implies 1 unit = 0.00001 BTC (1e-5)
-        # So multiplier is 1e5 (100,000)
-        # Note: This might vary for other tokens.
-        # TODO: Verify multiplier for ETH/SOL etc. For now assuming 1e5 for BTC.
-        base_amount_multiplier = 1e5
+        # Determine multiplier based on token
+        base_amount_multiplier = get_size_multiplier(token)
         base_amount = int(coin_amount * base_amount_multiplier) 
         
-        price_int = price_to_int(price)
+        price_int = price_to_int(price, token)
         
         print(f"DEBUG: Placing Order - Token: {token}, Leverage: {leverage}x, Price: {price} ({price_int}), Margin: {amount_in_usd}$, Position: {position_size_usd}$, Units: {base_amount}, Side: {side}")
 
@@ -97,7 +93,7 @@ async def open_limit_order(token, leverage, side, amount_in_usd, price, take_pro
             close_is_ask = not is_ask
             
             # TP Order
-            tp_price_int = price_to_int(take_profit_price) if take_profit_price else 0
+            tp_price_int = price_to_int(take_profit_price, token) if take_profit_price else 0
             tp_order = CreateOrderTxReq(
                 MarketIndex=market_index,
                 ClientOrderIndex=0,
@@ -112,7 +108,7 @@ async def open_limit_order(token, leverage, side, amount_in_usd, price, take_pro
             )
             
             # SL Order
-            sl_price_int = price_to_int(stop_loss_price) if stop_loss_price else 0
+            sl_price_int = price_to_int(stop_loss_price, token) if stop_loss_price else 0
             sl_order = CreateOrderTxReq(
                 MarketIndex=market_index,
                 ClientOrderIndex=0,
@@ -173,7 +169,7 @@ async def main_test():
             
             # 1. Long Order (Buy Limit below market)
             # Price: 80% of Bid
-            long_price = bid * 1.05
+            long_price = bid * 0.8
             # TP: 110% of Entry (Above Entry)
             long_tp = long_price * 1.1
             # SL: 90% of Entry (Below Entry)
@@ -204,5 +200,6 @@ async def main_test():
 
 if __name__ == "__main__":
     asyncio.run(main_test())
-    #asyncio.run(open_limit_order("BTC", 1, "Long", 10, 100000, 
-    #                               take_profit_price=110000, stop_loss_price=90000))
+    #asyncio.run(open_limit_order("ETH", 10, "Long", 50, 3000, take_profit_price=3200, stop_loss_price=2900))
+    #asyncio.run(open_limit_order("BTC", 10, "Long", 50, 90000, take_profit_price=92000, stop_loss_price=89000))
+```
