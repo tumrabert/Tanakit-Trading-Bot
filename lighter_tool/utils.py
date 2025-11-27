@@ -2,7 +2,10 @@ import os
 import requests
 import lighter
 from dotenv import load_dotenv
-from markets import MARKETS
+try:
+    from .markets import MARKETS
+except ImportError:
+    from markets import MARKETS
 
 load_dotenv()
 

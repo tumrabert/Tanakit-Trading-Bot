@@ -5,8 +5,12 @@ import lighter
 from dotenv import load_dotenv
 from lighter.signer_client import CreateOrderTxReq
 import time
-from markets import MARKETS
-from utils import price_to_int, get_client, get_market_price, get_size_multiplier
+try:
+    from .markets import MARKETS
+    from .utils import price_to_int, get_client, get_market_price, get_size_multiplier
+except ImportError:
+    from markets import MARKETS
+    from utils import price_to_int, get_client, get_market_price, get_size_multiplier
 
 # Load environment variables from project/.env
 load_dotenv()
@@ -202,4 +206,3 @@ if __name__ == "__main__":
     asyncio.run(main_test())
     #asyncio.run(open_limit_order("ETH", 10, "Long", 50, 3000, take_profit_price=3200, stop_loss_price=2900))
     #asyncio.run(open_limit_order("BTC", 10, "Long", 50, 90000, take_profit_price=92000, stop_loss_price=89000))
-```

@@ -1,62 +1,50 @@
 # Tanakit-Trading-Bot
 
-This project implements a trading bot for the Lighter.xyz exchange, featuring limit order placement with Take Profit (TP) and Stop Loss (SL) capabilities.
+A powerful trading bot for Lighter.xyz, featuring an advanced **Grid Trading Bot** and limit order management.
 
-## Key Features
+## Features
 
-*   **Open Limit Orders**: Place limit orders with optional TP and SL.
-*   **Grouped Orders**: Supports OCO (One-Cancels-the-Other) for TP/SL management.
-*   **Token Support**: Supports multiple tokens (BTC, ETH, SOL, BNB, etc.) via a centralized market mapping.
-*   **Leverage**: Configurable leverage for position sizing.
-*   **Utils**: Helper functions for price conversion, client initialization, and market data fetching.
+### 🤖 Grid Trading Bot
+*   **Directional Strategies**:
+    *   **NEUTRAL**: Standard grid (Buy Low, Sell High). Places orders on both sides.
+    *   **LONG**: Bullish grid. Initially places only Buy orders (below market). Sells are placed only to take profit on fills.
+    *   **SHORT**: Bearish grid. Initially places only Sell orders (above market). Buys are placed only to take profit on fills.
+*   **Auto-Refill**: Automatically replaces filled orders with opposite orders to capture volatility.
+*   **Safety Mechanisms**:
+    *   **Hard Cap**: Prevents exceeding exchange order limits (max 50 orders).
+    *   **Grace Period**: Handles API latency to prevent duplicate orders.
+    *   **Dynamic Precision**: Automatically handles price precision for any token.
 
-## Project Structure
+### 🛠️ Order Management
+*   **Open Limit Orders**: Place limit orders with optional Take Profit (TP) and Stop Loss (SL).
+*   **Account Management**: Upgrade/Downgrade account tiers.
 
-*   `open_limit_order.py`: Main script to open limit orders. Contains the `open_limit_order` function and a test suite.
-*   `markets.py`: Dictionary mapping token symbols (e.g., "BTC") to their Lighter market IDs.
-*   `utils.py`: Helper functions:
-    *   `price_to_int`: Converts float prices to integer format required by the API.
-    *   `get_client`: Initializes the Lighter SignerClient.
-    *   `get_market_price`: Fetches the current Best Bid and Best Ask for a token.
-*   `test_open_limit_order.py`: Unit tests for the order placement logic.
+## Quick Start
 
-## Usage
-
-### Open a Limit Order
-
-```python
-from open_limit_order import open_limit_order
-import asyncio
-
-async def main():
-    # Example: Open Long ETH with 10x Leverage
-    # Margin: $53, Price: 3200
-    # TP: 3300, SL: 3000
-    await open_limit_order(
-        token="ETH", 
-        leverage=10, 
-        side="Long", 
-        amount_in_usd=53, 
-        price=3200, 
-        take_profit_price=3300, 
-        stop_loss_price=3000
-    )
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
-### Run Tests
-
-To run the built-in verification suite (tests BTC, ETH, SOL, BNB):
+### Run the Grid Bot
+Use the convenience script:
 ```bash
-python open_limit_order.py
+./run_bot.sh
 ```
 
-To run unit tests:
+Or run manually via CLI:
 ```bash
-python test_open_limit_order.py
+python main.py grid --token BTC --direction LONG --leverage 10 --grids 20 --invest 100 --lower 90000 --upper 100000
 ```
+
+**Parameters:**
+*   `--token`: Token symbol (e.g., BTC, ETH).
+*   `--direction`: Strategy direction (`LONG`, `SHORT`, `NEUTRAL`).
+*   `--leverage`: Leverage multiplier (e.g., 10).
+*   `--grids`: Number of grid levels (e.g., 20).
+*   `--invest`: Total investment margin in USD (e.g., 100).
+*   `--lower`: Lower price bound.
+*   `--upper`: Upper price bound.
+
+### Other Commands
+*   **Limit Order Test**: `python main.py limit_test`
+*   **Upgrade Account**: `python main.py upgrade`
+*   **Downgrade Account**: `python main.py downgrade`
 
 ## Configuration
 
