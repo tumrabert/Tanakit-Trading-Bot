@@ -1,0 +1,5 @@
+lighter-resource/*
+.venv/*
+lighter-go-sdk/*
+.env.*
+.env
